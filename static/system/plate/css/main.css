@@ -1,0 +1,54 @@
+#videoStream {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plate-list {
+    list-style: none; /* 移除列表默认样式 */
+    padding: 0; /* 移除默认的内边距 */
+    margin: 0; /* 移除默认的外边距 */
+}
+
+.plate-list li {
+    margin-bottom: 15px; /* 添加列表项之间的间隔 */
+    text-align: center; /* 居中文本和按钮 */
+    background-color: #f8f8f8; /* 背景颜色 */
+    border: 1px solid #eaeaea; /* 边框颜色 */
+    padding: 10px; /* 内边距 */
+    border-radius: 5px; /* 圆角边框 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+    transition: all 0.3s ease; /* 过渡动画 */
+    cursor: pointer; /* 鼠标悬停时的手指指针 */
+}
+
+.plate-list li:hover {
+    background-color: #e6e6e6; /* 悬停时的背景颜色 */
+    border-color: #d1d1d1; /* 悬停时的边框颜色 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 悬停时的阴影效果 */
+}
+
+.plate-image {
+    max-width: 100%; /* 限制图片最大宽度 */
+    height: auto; /* 保持图片比例 */
+    border: 1px solid #ddd; /* 添加边框 */
+    margin-bottom: 5px; /* 添加图片与按钮之间的间隔 */
+    border-radius: 3px; /* 图片圆角边框 */
+}
+
+/* 按钮样式 */
+.plate-btn {
+    display: inline-block; /* 使按钮可以应用margin等样式 */
+    margin: 0; /* 移除按钮默认外边距 */
+    padding: 5px 10px; /* 按钮内边距 */
+    background-color: #4CAF50; /* 按钮背景颜色 */
+    color: white; /* 按钮文字颜色 */
+    border: none; /* 移除边框 */
+    border-radius: 3px; /* 圆角边框 */
+    transition: background-color 0.3s ease; /* 背景颜色过渡动画 */
+}
+
+.plate-btn:hover {
+    background-color: #45a049; /* 按钮悬停时的背景颜色 */
+}

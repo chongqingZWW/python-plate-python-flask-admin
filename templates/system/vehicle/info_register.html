@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>车辆信息录入</title>
+    {% include 'system/common/header.html' %}
+</head>
+<body>
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+
+                <fieldset class="layui-elem-field" style="padding: 10px; border: 1px solid #DDD;">
+                    <legend>车辆信息录入</legend>
+
+                    <!-- 业主姓名输入 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">业主姓名</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" required lay-verify="required" placeholder="请输入业主姓名"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <!-- 业主地址输入 -->
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">业主地址</label>
+                        <div class="layui-input-block">
+                            <textarea name="address" placeholder="请输入业主地址" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <!-- 业主电话输入 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车主电话</label>
+                        <div class="layui-input-block">
+                            <input type="tel" name="phone" required lay-verify="required" placeholder="请输入业主电话"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <!-- 车辆类型输入 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车辆类型</label>
+                        <div class="layui-input-block">
+                            <select name="type" lay-filter="typeSelect" lay-verify="required" lay-search lay-search>
+                                <option value="">请选择车辆类型</option>
+                                <option value="自定义">自定义</option>
+                                <option value="轿车">轿车</option>
+                                <option value="SUV">SUV</option>
+                                <option value="MPV">MPV</option>
+                                <option value="商务车">商务车</option>
+                                <option value="卡车">卡车</option>
+                                <option value="皮卡">皮卡</option>
+                                <option value="微面">微面</option>
+                                <option value="摩托车">摩托车</option>
+                                <option value="电动汽车">电动汽车</option>
+                                <option value="混合动力汽车">混合动力汽车</option>
+                                <option value="客车">客车</option>
+                                <option value="校车">校车</option>
+                                <option value="公交车">公交车</option>
+                                <option value="特种车辆">特种车辆</option>
+                                <option value="农用车">农用车</option>
+                                <option value="工程车">工程车</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item" style="display: none;" id="customTypeInput">
+                        <label class="layui-form-label">自定义车辆类型</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="custom_type" placeholder="输入自定义车辆类型" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车辆颜色</label>
+                        <div class="layui-input-inline">
+                            <select name="color" lay-verify="required" lay-filter="colorSelect" lay-search>
+                                <option value="">请选择车辆颜色</option>
+                                <option value="自定义">自定义</option>
+                                <option value="#FF0000">红色</option>
+                                <option value="#0000FF">蓝色</option>
+                                <option value="#008000">绿色</option>
+                                <option value="#FFFF00">黄色</option>
+                                <option value="#000000">黑色</option>
+                                <option value="#FFFFFF">白色</option>
+                                <option value="#C0C0C0">银色</option>
+                                <option value="#808080">灰色</option>
+                                <option value="#800000">深红色</option>
+                                <option value="#800080">紫色</option>
+                                <option value="#808000">橄榄色</option>
+                                <option value="#008080">青色</option>
+                                <option value="#FFA500">橙色</option>
+                                <option value="#FF00FF">粉红色</option>
+                                <option value="#A52A2A">棕色</option>
+                                <option value="#FFD700">金色</option>
+                                <option value="#FF4500">橙红色</option>
+                                <option value="#008B8B">暗青色</option>
+                                <option value="#00FF00">亮绿色</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="display:none;" id="customColorInput">
+                            <input type="text" name="custom_color" placeholder="输入自定义颜色" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-input-inline" style="display:none;" id="htmlColorPicker">
+                            <input type="color" id="colorPicker" class="layui-input">
+                            <div class="color-hint" style="white-space: nowrap;">
+                                <i class="layui-icon layui-icon-tips"></i> 颜色选择器可选颜色（如果手动输入中文自定义则按中文显示）
+                            </div>
+                        </div>
+
+                        <!-- 色块显示区域 -->
+                        <div class="layui-input-inline" id="colorBlock"
+                             style="width: 36px; height: 36px; border: 1px solid #ccc;"></div>
+                    </div>
+
+                    <!-- 登记开始日期 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车牌登记日期</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="registration_start_date" id="registration_start_date"
+                                   autocomplete="off" class="layui-input datetime" placeholder="yyyy-MM-dd"
+                                   readonly>
+                        </div>
+                    </div>
+                    <!-- 登记截止日期 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">登记登记截止日期</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="registration_end_date" id="registration_end_date"
+                                   autocomplete="off"
+                                   class="layui-input datetime" placeholder="yyyy-MM-dd" readonly>
+                        </div>
+                    </div>
+
+                    <!-- 车牌号输入 -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车辆牌照</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="license_plate" required lay-verify="required"
+                                   placeholder="请输入车牌号"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">车牌照片(选择下方识别)</label>
+                        <img id="capturedPhoto"
+                             src="{{ url_for('static', filename='system/admin/images/plate_car.png') }}"
+                             alt="拍照图片" style="max-width: 300px; max-height: 150px; object-fit: contain;">
+                        <input name="photo_path" type="hidden">
+                    </div>
+
+                </fieldset>
+
+                <fieldset class="layui-elem-field" style="padding: 10px; border: 1px solid #DDD;">
+                    <legend>车牌识别方式</legend>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">方式一：</label>
+                        <div class="layui-input-block">
+                            <!-- 图片上传按钮 -->
+                            <button type="button" class="layui-btn" id="uploadImage">
+                                <i class="layui-icon">&#xe67c;</i>上传图片
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">方式二：</label>
+                        <div class="layui-input-block">
+                            <!-- 摄像头操作按钮 -->
+                            <button type="button" class="layui-btn" id="startCamera">
+                                <i class="layui-icon">&#xe652;</i>开启
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-warm" id="capturePhoto">
+                                <i class="layui-icon">&#xe60d;</i>拍照
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-danger" id="stopCamera">
+                                <i class="layui-icon">&#xe756;</i>关闭
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-row layui-col-space15">
+                            <div class="flex-container" style="display: flex; justify-content: space-between;">
+                                <!-- 左侧容器：实时视频流 -->
+                                <div class="video-container"
+                                     style="flex: 1; display: flex; align-items: center; justify-content: center; height: 100%; margin-right: 5px;">
+                                    <img id="loadingAnimation"
+                                         src="{{ url_for('static', filename='system/admin/images/loading.gif') }}"
+                                         alt="加载中..." style="display: none;">
+                                    <img id="videoStream" src="" alt="实时视频"
+                                         style="max-width: 60%; max-height: 50%; object-fit: contain; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit=""
+                    lay-filter="vehicleInfo-save">
+                <i class="layui-icon layui-icon-ok"></i>
+                提交
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                重置
+            </button>
+        </div>
+    </div>
+</form>
+{% include 'system/common/footer.html' %}
+<script>
+    layui.use(['jquery', 'element', 'form', 'laydate', 'upload'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            form = layui.form,
+            laydate = layui.laydate,
+            upload = layui.upload;
+
+
+        let isCameraActive = false; // 用来跟踪摄像头是否开启
+
+        const videoStream = $('#videoStream');
+        const startCameraButton = $('#startCamera');
+        const capturePhotoButton = $('#capturePhoto');
+        const stopCameraButton = $('#stopCamera');
+
+        // 车辆类型
+        form.on('select(typeSelect)', function (data) {
+            var selectedValue = data.value;
+            if (selectedValue === '自定义') {
+                $('#customTypeInput').show();
+            } else {
+                $('#customTypeInput').hide();
+            }
+        });
+
+        // 监听下拉选择变化
+        form.on('select(colorSelect)', function (data) {
+            if (data.value === '自定义') {
+                $('#customColorInput').show(); // 显示自定义颜色输入框
+                $('#htmlColorPicker').show(); // 显示颜色选择器
+                $('#colorBlock').hide();
+            } else {
+                $('#customColorInput').hide().val(''); // 隐藏并清空自定义颜色输入框
+                $('#htmlColorPicker').hide();
+                // 直接使用预定义颜色更新色块和颜色选择器
+                updateColorBlock(data.value);
+                $('#colorPicker').val(data.value);
+                $('#colorBlock').show();
+            }
+        });
+
+        // 监听HTML5颜色选择器变化
+        $('#colorPicker').on('change', function () {
+            var selectedColor = $(this).val();
+            $('input[name="custom_color"]').val(selectedColor); // 自动填充到自定义颜色输入框
+            updateColorBlock(selectedColor); // 更新色块颜色
+        });
+
+        // 监听自定义颜色输入框的变化（十六进制颜色代码）
+        $('input[name="custom_color"]').on('input', function () {
+            var customColor = $(this).val();
+            updateColorBlock(customColor); // 更新色块颜色
+            // 尝试更新颜色选择器的值，如果输入有效
+            if (/^#[0-9A-Fa-f]{6}$/.test(customColor)) {
+                $('#colorPicker').val(customColor);
+            }
+        });
+
+        // 更新色块颜色的函数
+        function updateColorBlock(color) {
+            $('#colorBlock').css('background-color', color);
+        }
+
+        // 初始化日期选择器
+        laydate.render({
+            elem: '#registration_start_date',  // 绑定元素
+            type: 'date',     // 只选择日期
+            format: 'yyyy-MM-dd'  // 格式化日期
+        });
+
+        laydate.render({
+            elem: '#registration_end_date',  // 绑定元素
+            type: 'date',     // 只选择日期
+            format: 'yyyy-MM-dd'  // 格式化日期
+        });
+
+        upload.render({
+            elem: '#uploadImage',
+            url: '/system/vehicle/info/upload_image',
+            accept: 'images',
+            acceptMime: 'image/*',
+            done: function (res) {
+                if (res.success) {
+                    handleUploadSuccess(res);
+                } else {
+                    layer.msg('图片上传失败: ' + res.msg);
+                }
+            },
+            error: function () {
+                layer.msg('图片上传接口有误');
+            }
+        });
+
+        function showPlateSelectionLayer(plates) {
+            let platesHtml = '<ul class="plate-list">';
+            platesHtml += plates.map((plate, index) =>
+                `<li id="plateItem${index}">
+            <img src="${plate.file_url}" alt="车牌" class="plate-image"/>
+            <button id="plateBtn${index}" class="layui-btn layui-btn-normal">${plate.code}</button>
+        </li>`
+            ).join('');
+            platesHtml += '</ul>';
+
+            layer.open({
+                title: '请选择车牌',
+                content: platesHtml,
+                btn: [],
+                area: ['30%', '50%'],
+                success: function (layero, index) {
+                    plates.forEach((plate, idx) => {
+                        $(`#plateBtn${idx}`).on('click', function () {
+                            $('input[name="license_plate"]').val(plate.code);
+                            $('#capturedPhoto').attr('src', plate.file_url);
+                            $('input[name="photo_path"]').val(plate.file_url); // 保存照片路径
+                            layer.close(index);
+                        });
+                    });
+                }
+            });
+        }
+
+        function handleUploadSuccess(res) {
+            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                showPlateSelectionLayer(res.data);
+            } else {
+                $('input[name="license_plate"]').val('');
+                layer.msg(res.msg || '未识别到车牌');
+            }
+        }
+
+        // 开启摄像头采集
+        startCameraButton.on('click', function () {
+            layer.msg('正在开启摄像头，请稍等...', {time: 2000}); // 显示2秒的提示信息
+
+            $('#loadingAnimation').show();
+
+            // 发送请求到后端启动摄像头
+            $.post("{{ url_for('system.vehicle.start_camera') }}", function (data) {
+                if (data.success) {
+                    // 如果成功，显示视频流并更改按钮状态
+                    $('#loadingAnimation').hide(); // 隐藏加载动画
+                    videoStream.attr('src', "{{ url_for('system.vehicle.capture_plate') }}").show();
+                    startCameraButton.prop('disabled', true);
+                    stopCameraButton.prop('disabled', false);
+                    capturePhotoButton.prop('disabled', false);
+                    isCameraActive = true; // 标记摄像头为已开启
+                } else {
+                    // 如果失败，使用Layui弹出层显示错误消息
+                    $('#loadingAnimation').hide(); // 隐藏加载动画
+                    layer.msg(data.msg, {icon: 2, time: 2500});
+                }
+            }).fail(function () {
+                $('#loadingAnimation').hide(); // 隐藏加载动画
+                layer.msg('请求失败，请检查网络或联系管理员', {icon: 2, time: 2500});
+            });
+        });
+
+        // 拍照
+        capturePhotoButton.on('click', function () {
+            layer.msg('正在抓紧识别车牌，请稍等...', {time: 2000}); // 显示2秒的提示信息
+            $.ajax({
+                url: '{{ url_for("system.vehicle.capture_photo") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success && res.data && Array.isArray(res.data) && res.data.length > 0) {
+                        if (res.data.length === 1) {
+                            // 只有一个车牌
+                            $('input[name="license_plate"]').val(res.data[0].code);
+                            $('#capturedPhoto').attr('src', res.data[0].file_url);
+                            $('input[name="photo_path"]').val(res.data[0].file_url); // 保存照片路径
+                            layer.msg('车牌识别成功');
+                        } else {
+                            // 多个车牌，弹框供用户选择
+                            showPlateSelectionLayer(res.data);
+                        }
+                    } else {
+                        // 未识别到车牌
+                        $('input[name="license_plate"]').val(''); // 清空车牌号
+                        layer.msg(res.msg || '未识别到车牌');
+                    }
+                },
+                error: function () {
+                    layer.msg('车牌识别请求失败，请重试');
+                }
+            });
+        });
+
+        // 关闭摄像头采集
+        stopCameraButton.on('click', function () {
+            layer.msg('正在关闭，请稍等...', {time: 2000}); // 显示2秒的提示信息
+            $.post("{{ url_for('system.vehicle.stop_camera') }}", function (data) {
+                if (data.success) {
+                    videoStream.attr('src', "");
+                    videoStream.hide();
+                    startCameraButton.prop('disabled', false);
+                    stopCameraButton.prop('disabled', true);
+                    capturePhotoButton.prop('disabled', true);
+                    isCameraActive = false; // 标记摄像头为已关闭
+                } else {
+                    layer.alert(data.msg);
+                }
+            });
+        });
+
+        // 在用户尝试离开页面时执行
+        window.addEventListener('beforeunload', function (e) {
+            if (isCameraActive) {
+                // 尝试关闭摄像头
+                $.ajax({
+                    type: "POST",
+                    url: "{{ url_for('system.vehicle.stop_camera') }}",
+                    success: function (data) {
+                        console.log("摄像头已关闭");
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("关闭摄像头时发生错误");
+                    }
+                });
+
+                // 显示标准的警告消息
+                var message = '摄像头可能仍在运行。请在离开前确保已经将其关闭。';
+                e.returnValue = message; // 标准的跨浏览器兼容性处理
+                return message;
+            }
+        });
+
+        function closeEvent(option) {
+            $(".layui-tab[lay-filter='" + option.elem + "']").on("click", ".layui-tab-close", function () {
+                var layid = $(this).parent().attr("lay-id");
+                // Your logic to handle the tab close event, like deleting the tab and calling any callback
+                if (option.closeEvent) {
+                    option.closeEvent(layid); // Call the custom close event, if provided
+                }
+            });
+        }
+
+        closeEvent({
+            elem: 'yourTabFilter', // Replace 'yourTabFilter' with the actual lay-filter value of your tabs
+            closeEvent: function (layid) {
+                console.log("Tab with lay-id " + layid + " was closed");
+                // Additional logic to run when a tab is closed
+            }
+        });
+
+        // 监听提交
+        form.on('submit(vehicleInfo-save)', function (data) {
+            // 发送ajax请求到后端API保存数据
+            $.ajax({
+                url: '/system/vehicle/info/register', // 数据保存接口
+                data: JSON.stringify(data.field),
+                dataType: 'json',
+                contentType: 'application/json',
+                type: 'post',
+                success: function (result) {
+                    if (result.success) {
+                        layer.msg('车辆信息保存成功', {icon: 1, time: 1000}, function () {
+                            // 可以在这里写入页面跳转逻辑，例如刷新页面或者跳转到其他页面
+                            parent.layer.close(parent.layer.getFrameIndex(window.name)); // 关闭当前页
+                            window.parent.location.reload();
+                        });
+                    } else {
+                        layer.msg(result.msg, {icon: 2, time: 1000});
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    // 请求异常处理
+                    layer.msg('请求发生错误：' + textStatus + ', ' + errorThrown);
+                }
+            });
+            return false; // 阻止表单跳转
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>车辆信息录入</title>
+    {% include 'system/common/header.html' %}
+</head>
+
+<body>
+<div class="mainBox">
+    <div class="main-container">
+        <div class="main-container">
+
+            <fieldset class="layui-elem-field" style="padding: 10px; border: 1px solid #DDD;">
+                <legend>模拟车辆出入方式</legend>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">模拟出入：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="entry_exit" value="entry" id="entry" title="模拟进入" checked>
+                        <label for="entry">模拟进入</label>
+                    </div>
+
+                    <div class="layui-input-block">
+                        <input type="radio" name="entry_exit" value="exit" id="exit" title="模拟外出">
+                        <label for="exit">模拟外出</label>
+                    </div>
+                </div>
+
+                <!-- 模拟进入的表格内容 -->
+                <div id="entryInfo">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>车牌号</th>
+                            <th>车辆类型</th>
+                            <th>进入时间</th>
+                            <th>总车位数</th>
+                            <th>剩余车位数</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 进入时的数据 -->K
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 添加收费模式的描述 -->
+                <fieldset class="layui-elem-field" style="padding: 10px; border: 1px solid #DDD;">
+                    <legend>收费模式</legend>
+                    <div style="padding: 20px;">
+                        计费方式如下：
+                        <ul>
+                            <li>停车时长小于30分钟（0.5小时），免费。</li>
+                            <li>超过30分钟，每满1小时收费5元，不足1小时按1小时计算。</li>
+                            <li>最高收费20元。</li>
+                        </ul>
+                    </div>
+                </fieldset>
+
+                <!-- 模拟外出的表格内容 -->
+                <div id="exitInfo" style="display: none;">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>车牌号</th>
+                            <th>车辆类型</th>
+                            <th>停车时长</th>
+                            <th>收费</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- 外出时的数据 -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </fieldset>
+
+            <fieldset class="layui-elem-field" style="padding: 10px; border: 1px solid #DDD;">
+                <legend>车牌识别方式</legend>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">方式一：</label>
+                    <div class="layui-input-block">
+                        <!-- 图片上传按钮 -->
+                        <button type="button" class="layui-btn" id="uploadImage">
+                            <i class="layui-icon">&#xe67c;</i>上传图片
+                        </button>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">方式二：</label>
+                    <div class="layui-input-block">
+                        <!-- 摄像头操作按钮 -->
+                        <button type="button" class="layui-btn" id="startCamera">
+                            <i class="layui-icon">&#xe652;</i>开启
+                        </button>
+                        <button type="button" class="layui-btn layui-btn-danger" id="stopCamera">
+                            <i class="layui-icon">&#xe756;</i>关闭
+                        </button>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-row layui-col-space15">
+                        <div class="flex-container" style="display: flex; justify-content: space-between;">
+                            <!-- 左侧容器：实时视频流 -->
+                            <div class="video-container"
+                                 style="flex: 1; display: flex; align-items: center; justify-content: center; height: 100%; margin-right: 5px;">
+                                <img id="loadingAnimation"
+                                     src="{{ url_for('static', filename='system/admin/images/loading.gif') }}"
+                                     alt="加载中..." style="display: none;">
+                                <img id="videoStream" src="" alt="实时视频"
+                                     style="max-width: 60%; max-height: 50%; object-fit: contain; display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+{% include 'system/common/footer.html' %}
+<script>
+    layui.use(['form', 'jquery',
+        'laydate', 'upload'], function () {
+        let form = layui.form,
+            $ = layui.jquery,
+            upload = layui.upload;
+
+        let isCameraActive = false; // 用来跟踪摄像头是否开启
+        const videoStream = $('#videoStream');
+        const startCameraButton = $('#startCamera');
+        const capturePhotoButton = $('#capturePhoto');
+        const stopCameraButton = $('#stopCamera');
+
+        $('input[name="entry_exit"]').change(function () {
+            toggleTable(this.value);
+        });
+
+        // 初始化时根据选中的单选按钮显示相应表格
+        var initValue = $('input[name="entry_exit"]:checked').val();
+        toggleTable(initValue);
+
+        var lastData = []; // 存储最后一次获取的数据
+        var newDataAvailable = true; // 标志是否有新数据可用
+
+        function dataChanged(newData) {
+            if (!newData || newData.length === 0) {
+                newDataAvailable = false;
+                return false;
+            }
+            // 检查数据长度是否相同
+            if (lastData.length !== newData.length) {
+                return true;
+            }
+
+            // 检查每一项数据是否有变化
+            for (var i = 0; i < newData.length; i++) {
+                if (JSON.stringify(lastData[i]) !== JSON.stringify(newData[i])) {
+                    return true;
+                }
+            }
+
+            // 如果没有发现任何变化，返回 false
+            return false;
+        }
+
+        function toggleTable(value) {
+            if (value === 'entry') {
+                $('#entryInfo').show();
+                $('#exitInfo').hide();
+            } else if (value === 'exit') {
+                $('#entryInfo').hide();
+                $('#exitInfo').show();
+            }
+        }
+
+        setInterval(() => {
+            if (isCameraActive) {
+                fetchData();
+            }
+        }, 3000);
+
+        function fetchData() {
+            var currentMode = $('input[name="entry_exit"]:checked').val();
+            fetch('{{ url_for("system.vehicle.get_plates") }}?mode=' + currentMode)
+                .then(response => response.json())
+                .then(data => {
+                    if (dataChanged(data)) {
+                        updateList(data);
+                    }
+                });
+        }
+
+        function updateList(data) {
+            $('#entryInfo tbody').empty();
+            $('#exitInfo tbody').empty();
+
+            var currentMode = $('input[name="entry_exit"]:checked').val();
+            data.forEach(function (item) {
+                var row;
+                if (currentMode === 'entry') {
+                    row = `<tr>
+                <td>${item.license_plate}</td>
+                <td>${item.vehicle_type}</td>
+                <td>${item.entry_time}</td>
+                <td>${item.total_spaces}</td>
+                <td>${item.available_spaces}</td>
+               </tr>`;
+                } else {
+                    var parkingDuration = item.parking_duration;
+                    var feeFormatted = item.fee;
+                    row = `<tr>
+                <td>${item.license_plate}</td>
+                <td>${item.vehicle_type}</td>
+                <td>${parkingDuration}</td>
+                <td>${feeFormatted}</td>
+               </tr>`;
+                }
+                if (currentMode === 'entry') {
+                    $('#entryInfo tbody').append(row);
+                } else {
+                    $('#exitInfo tbody').append(row);
+                }
+            });
+        }
+
+        upload.render({
+            elem: '#uploadImage',
+            url: '/system/vehicle/info/upload_image',
+            accept: 'images',
+            acceptMime: 'image/*',
+            done: function (res) {
+                if (res.success) {
+                    handleUploadSuccess(res);
+                } else {
+                    layer.msg('图片上传失败: ' + res.msg);
+                }
+            },
+            error: function () {
+                layer.msg('图片上传接口有误');
+            }
+        });
+
+        function showPlateSelectionLayer(plates) {
+            let platesHtml = '<ul class="plate-list">';
+            platesHtml += plates.map((plate, index) =>
+                `<li id="plateItem${index}">
+            <img src="${plate.file_url}" alt="车牌" class="plate-image"/>
+            <button id="plateBtn${index}" class="layui-btn layui-btn-normal">${plate.code}</button>
+        </li>`
+            ).join('');
+            platesHtml += '</ul>';
+
+            layer.open({
+                title: '请选择车牌',
+                content: platesHtml,
+                btn: [],
+                area: ['30%', '50%'],
+                success: function (layero, index) {
+                    plates.forEach((plate, idx) => {
+                        $(`#plateBtn${idx}`).on('click', function () {
+                            // 设置车牌号和照片路径
+                            $('input[name="license_plate"]').val(plate.code);
+                            $('#capturedPhoto').attr('src', plate.file_url);
+                            $('input[name="photo_path"]').val(plate.file_url);
+
+                            // 获取当前模式（进入或离开）
+                            var currentMode = $('input[name="entry_exit"]:checked').val();
+
+                            // 发起请求处理选中的车牌号
+                            processSelectedPlate(plate.code, currentMode);
+
+                            layer.close(index);
+                        });
+                    });
+                }
+            });
+        }
+
+        function processSelectedPlate(licensePlate, mode) {
+            fetch(`{{ url_for('system.vehicle.get_plates') }}?license_plate=${licensePlate}&mode=${mode}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 根据返回的数据更新前端显示
+                    updateList(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
+        function handleUploadSuccess(res) {
+            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                showPlateSelectionLayer(res.data);
+            } else {
+                $('input[name="license_plate"]').val('');
+                layer.msg(res.msg || '未识别到车牌');
+            }
+        }
+
+        // 开启摄像头采集
+        startCameraButton.on('click', function () {
+            layer.msg('正在开启摄像头，请稍等...', {time: 2000}); // 显示2秒的提示信息
+
+            $('#loadingAnimation').show();
+
+            // 发送请求到后端启动摄像头
+            $.post("{{ url_for('system.vehicle.start_camera') }}", function (data) {
+                if (data.success) {
+                    // 如果成功，显示视频流并更改按钮状态
+                    $('#loadingAnimation').hide(); // 隐藏加载动画
+                    videoStream.attr('src', "{{ url_for('system.vehicle.capture_plate') }}").show();
+                    startCameraButton.prop('disabled', true);
+                    stopCameraButton.prop('disabled', false);
+                    capturePhotoButton.prop('disabled', false);
+                    isCameraActive = true; // 标记摄像头为已开启
+                } else {
+                    // 如果失败，使用Layui弹出层显示错误消息
+                    $('#loadingAnimation').hide(); // 隐藏加载动画
+                    layer.msg(data.msg, {icon: 2, time: 2500});
+                }
+            }).fail(function () {
+                $('#loadingAnimation').hide(); // 隐藏加载动画
+                layer.msg('请求失败，请检查网络或联系管理员', {icon: 2, time: 2500});
+            });
+        });
+
+        // 拍照
+        capturePhotoButton.on('click', function () {
+            layer.msg('正在抓紧识别车牌，请稍等...', {time: 2000}); // 显示2秒的提示信息
+            $.ajax({
+                url: '{{ url_for("system.vehicle.capture_photo") }}',
+                method: 'POST',
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success && res.data && Array.isArray(res.data) && res.data.length > 0) {
+                        if (res.data.length === 1) {
+                            // 只有一个车牌
+                            layer.msg('车牌识别成功');
+                        } else {
+                            // 多个车牌，弹框供用户选择
+                            showPlateSelectionLayer(res.data);
+                        }
+                    } else {
+                        // 未识别到车牌
+                        $('input[name="license_plate"]').val(''); // 清空车牌号
+                        layer.msg(res.msg || '未识别到车牌');
+                    }
+                },
+                error: function () {
+                    layer.msg('车牌识别请求失败，请重试');
+                }
+            });
+        });
+
+        // 在用户尝试离开页面时执行
+        window.addEventListener('beforeunload', function (e) {
+            if (isCameraActive) {
+                // 尝试关闭摄像头
+                $.ajax({
+                    type: "POST",
+                    url: "{{ url_for('system.vehicle.stop_camera') }}",
+                    success: function (data) {
+                        console.log("摄像头已关闭");
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("关闭摄像头时发生错误");
+                    }
+                });
+
+                // 显示标准的警告消息
+                var message = '摄像头可能仍在运行。请在离开前确保已经将其关闭。';
+                e.returnValue = message; // 标准的跨浏览器兼容性处理
+                return message;
+            }
+        });
+
+
+        // 关闭摄像头采集
+        stopCameraButton.on('click', function () {
+            layer.msg('正在关闭，请稍等...', {time: 2000}); // 显示2秒的提示信息
+            $.post("{{ url_for('system.vehicle.stop_camera') }}", function (data) {
+                if (data.success) {
+                    videoStream.attr('src', "");
+                    videoStream.hide();
+                    startCameraButton.prop('disabled', false);
+                    stopCameraButton.prop('disabled', true);
+                    capturePhotoButton.prop('disabled', true);
+                    isCameraActive = false; // 标记摄像头为已关闭
+                } else {
+                    layer.alert(data.msg);
+                }
+            });
+        });
+
+    });
+</script>
+</body>
+</html>

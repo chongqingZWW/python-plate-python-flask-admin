@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我管理的车辆信息</title>
+    {% include 'system/common/header.html' %}
+</head>
+<body class="pear-container">
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="searchForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">车牌号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="license_plate" placeholder="请输入车牌号" class="layui-input">
+                </div>
+                <label class="layui-form-label">业主姓名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="name" placeholder="请输入业主姓名" class="layui-input">
+                </div>
+                <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="searchQuery">
+                    <i class="layui-icon layui-icon-search"></i>
+                    查询
+                </button>
+                <button type="reset" class="pear-btn pear-btn-md">
+                    <i class="layui-icon layui-icon-refresh"></i>
+                    重置
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="dataTable" lay-filter="dataTable"></table>
+    </div>
+</div>
+<script type="text/html" id="user-bar">
+    {% if authorize("system:vehicle:info_remove") %}
+        <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove"><i
+                class="pear-icon pear-icon-ashbin"> 删除</i>
+        </button>
+    {% endif %}
+</script>
+
+{% include 'system/common/footer.html' %}
+
+<script>
+    layui.use(['table', 'jquery', 'popup', 'form'], function () {
+        let table = layui.table,
+            $ = layui.jquery,
+            form = layui.form,
+            popup = layui.popup;
+
+        let MODULE_PATH = "{{ url_for('system.vehicle.info_main') }}"
+
+        // 定义表格列，允许直接在表格中编辑部分字段
+        let cols = [[
+            {field: 'id', title: 'ID', sort: true, align: 'center', width: 80},
+            {field: 'license_plate', title: '车牌号', edit: 'text', align: 'center'},
+            {field: 'name', title: '业主姓名', edit: 'text', align: 'center'},
+            {field: 'address', title: '业主地址', edit: 'text', align: 'center'},
+            {field: 'phone', title: '业主电话', edit: 'text', align: 'center'},
+            {field: 'type', title: '车辆类型', edit: 'text', align: 'center'},
+            {
+                field: 'color', title: '车辆颜色', edit: 'text', align: 'center', templet: function (d) {
+                    var value = d.color;
+                    var isChinese = /^[\u4e00-\u9fa5]+$/.test(value); // 检查是否为中文
+
+                    if (isChinese) {
+                        return value; // 如果是中文，直接显示文字
+                    } else {
+                        return '<div style="width: 20px; height: 20px; background-color:' + value + '; border: 1px solid #000;"></div>';
+                    }
+                }
+            }, {field: 'registration_start_date', title: '登记开始日期', edit: 'text', align: 'center'},
+            {field: 'registration_end_date', title: '登记截止日期', edit: 'text', align: 'center'},
+            {
+                field: 'photo_path',
+                title: '车牌照片',
+                align: 'center',
+                templet: function (d) {
+                    return `<img src="${d.photo_path}" style="max-width: 300px; max-height: 150px; object-fit: contain;">`;
+                }
+            },
+            {field: 'create_time', title: '创建时间', align: 'center'},
+            {field: 'update_time', title: '更新时间', align: 'center'},
+            {title: '操作', toolbar: '#user-bar', align: 'center', width: 180}
+        ]];
+
+        // 渲染表格
+        table.render({
+            elem: '#dataTable',
+            url: 'info_table',
+            cols: cols,
+            page: true,
+            skin: 'line',
+            toolbar: '#toolbar',
+            defaultToolbar: [{
+                layEvent: 'refresh',
+                icon: 'layui-icon-refresh',
+            }, 'filter', 'print', 'exports']
+        });
+
+        table.on('toolbar(dataTable)', function (obj) {
+            if (obj.event === 'add') {
+                window.add()
+            } else if (obj.event === 'refresh') {
+                window.refresh()
+            } else if (obj.event === 'batchRemove') {
+                window.batchRemove(obj)
+            }
+        })
+
+        table.on('tool(dataTable)', function (obj) {
+            if (obj.event === 'remove') {
+                window.remove(obj)
+            }
+        })
+
+        window.remove = function (obj) {
+            layer.confirm('确定要删除该车辆信息？', {icon: 3, title: '提示'}, function (index) {
+                layer.close(index)
+                let loading = layer.load()
+                $.ajax({
+                    url: 'info_remove/' + obj.data['id'],
+                    dataType: 'json',
+                    type: 'delete',
+                    success: function (result) {
+                        layer.close(loading)
+                        if (result.success) {
+                            popup.success(result.msg, function () {
+                                obj.del()
+                            })
+                        } else {
+                            popup.failure(result.msg)
+                        }
+                    }
+                })
+            })
+        }
+
+        window.refresh = function () {
+            table.reload('dataTable')
+        }
+
+        form.on('submit(searchQuery)', function (data) {
+            table.reload('dataTable', {
+                where: data.field,
+                page: {curr: 1}
+            });
+            return false;
+        });
+
+        // 监听单元格编辑事件
+        table.on('edit(dataTable)', function (obj) {
+            let data = obj.data; // 获取当前行的数据
+            let field = obj.field; // 获取编辑的字段名
+            let value = obj.value; // 获取编辑后的值
+
+            // 构建请求的数据
+            let requestData = {
+                id: data.id,
+                updated_data: {}
+            };
+            requestData.updated_data[field] = value;
+
+            // 发送更新请求
+            $.ajax({
+                url: 'info_update', // 修改为您的后端更新接口
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function (response) {
+                    if (response.success) {
+                        layer.msg('更新成功');
+                    } else {
+                        layer.msg('更新失败：' + response.msg);
+                    }
+                },
+                error: function () {
+                    layer.msg('更新失败');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
